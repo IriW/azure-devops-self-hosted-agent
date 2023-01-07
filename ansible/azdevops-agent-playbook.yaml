@@ -1,0 +1,223 @@
+---
+- hosts: all
+  become: yes
+  vars_files:
+    - vars/azdevops-vars.yaml
+  tasks:
+    - name: Update Cache
+      apt:
+        update_cache: yes
+      tags: update-cache
+
+    - name: Update All Packages
+      apt:
+        name: "*"
+        state: latest
+      tags: update-packages
+
+    - name: Import the Microsoft GPG key to use for agent, .NET Core and Azure CLI 
+      apt_key:
+        url: https://packages.microsoft.com/keys/microsoft.asc
+        state: present
+      tags:
+        - azdevops-agent
+        - azure-cli
+        - dotnet
+        
+    - name: Import the Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      tags:
+        - docker
+
+    - name: Import the Kubernetes GPG key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+      tags:
+        - kubernetes
+        
+    - name: Install Git
+      apt:
+        name: git
+        state: present
+      tags:
+        - git
+
+    - name: Install Python 3
+      apt:
+        name: python3
+        state: present
+      tags:
+        - python3
+
+    - name: Install Node.js
+      apt:
+        name: nodejs
+        state: present
+      tags:
+        - nodejs
+
+    - name: Install Java
+      apt:
+        name: default-jdk
+        state: present
+      tags:
+        - java-jdk
+
+    - name: Install Azure DevOps agent dependencies
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - curl
+        - apt-transport-https
+        - lsb-release
+        - ca-certificates
+        - gnupg
+      tags:
+        - azdevops-agent
+        - azure-cli
+
+    - name: Install Docker and Kubernetes dependencies (same for both)
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg-agent
+        - software-properties-common
+      tags:
+        - kubernetes
+        - docker
+
+    - name: Add the Docker package repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
+        state: present
+      tags:
+        - docker
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+      tags:
+        - docker
+
+    - name: Add the Kubernetes package repository
+      apt_repository:
+        repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+        state: present
+      tags:
+        - kubernetes
+
+    - name: Install the Kubernetes packages
+      apt:
+        name:
+          - kubelet
+          - kubectl
+          - kubeadm
+        state: present
+      tags:
+        - kubernetes
+
+    - name: Add the .NET Core package repository
+      apt_repository:
+        repo: "deb https://packages.microsoft.com/ubuntu/20.04/prod focal main"
+        state: present
+      tags:
+        - dotnet
+
+    - name: Install .NET Core SDK
+      apt:
+        name: dotnet-sdk-3.1
+        state: present
+      tags:
+        - dotnet
+
+    - name: Add the Azure CLI package repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ {{ ansible_lsb.codename }} main"
+        state: present
+      tags:
+        - azure-cli
+
+    - name: Install the Azure CLI package
+      apt:
+        name: azure-cli
+        state: present
+      tags:
+        - azure-cli
+
+    # - name: Add the Azure DevOps package repository
+    #   apt_repository:
+    #     repo: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-devops/ {{ ansible_lsb.codename }} main"
+    #     state: present
+    #   tags:
+    #     - azure-devops-agent
+
+    # - name: Install the Azure DevOps agent package
+    #   apt:
+    #     name: azdevops-agent
+    #     state: present
+    #   tags:
+    #     - azdevops-agent
+
+    - name: Install the Avahi daemon
+      apt:
+        name: avahi-daemon
+        state: present
+      tags:
+        - avahi
+
+    - name: Configure the Avahi daemon
+      template:
+        src: avahi.conf.j2
+        dest: /etc/avahi/avahi-daemon.conf
+      tags:
+        - avahi
+
+    - name: Restart the Avahi daemon
+      service:
+        name: avahi-daemon
+        state: restarted
+      tags:
+        - avahi
+
+    - name: Set hostname variable
+      set_fact:
+        ansible_hostname: "{{ azdevops_agent_name }}"
+      tags:
+        - avahi
+
+    # - name: Configure the Azure DevOps agent
+    #   shell: |
+    #     azdevopsagent configure \
+    #       --unattended \
+    #       --agent "${AZDEVOPS_AGENT_NAME}" \
+    #       --url "https://dev.azure.com/{{ AZDEVOPS_ACCOUNT_NAME }}" \
+    #       --auth pat \
+    #       --token "${AZDEVOPS_ACCESS_TOKEN}" \
+    #       --pool "${AZDEVOPS_AGENT_POOL}" \
+    #       --project "${AZDEVOPS_PROJECT_NAME}" \
+    #       --replace \
+    #       --acceptTeeEula
+    #   environment:
+    #     AZDEVOPS_AGENT_NAME: "{{ azdevops_agent_name }}"
+    #     AZDEVOPS_ACCOUNT_NAME: "{{ azdevops_account_name }}"
+    #     AZDEVOPS_ACCESS_TOKEN: "{{ azdevops_access_token }}"
+    #     AZDEVOPS_AGENT_POOL: "{{ azdevops_agent_pool }}"
+    #     AZDEVOPS_PROJECT_NAME: "{{ azdevops_project_name }}"
+    #   tags:
+    #     - azdevops-agent
+
+    # - name: Start the Azure DevOps agent
+    #   service:
+    #     name: azdevops-agent
+    #     state: started
+    #   tags:
+    #     - azdevops-agent
