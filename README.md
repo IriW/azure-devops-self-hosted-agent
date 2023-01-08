@@ -10,7 +10,7 @@ Before you start, create a new Azure DevOps Personal Access Token:
 
 ## Vagrantfile
 - Creates Ubuntu20.04LTS VM locally.
-- Uses specified SSH key pair for ansible.
+- ~~ Uses specified SSH key pair for ansible.~~ Uses key created by Vagrant. To use yours - uncomment corresponding line in Vagrantfile.
 - Creates VM with dynamically assigned IP (my network doesn't have static IP assigned, so this is a workaround). Due to that fact, Vagrant needs to publish the VM hostname on the network, which by next VM runs resolves the hostname `azdevops-ubuntu20-agent.local` to the correct IP by Avahi daemon, whatever the IP is.
 - Uses ansible to provision & configure Azure DevOps self-hosted agent.
 
