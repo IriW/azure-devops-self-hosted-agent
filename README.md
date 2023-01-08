@@ -1,9 +1,20 @@
 # Self-hosted Azure DevOps agent (running on Ubuntu20.04LTS) 
 
+## Prerequisites:
+
+- Vagrant installed locally
+- Python 3 installed locally
+- Ansible installed locally
+- Git installed locally
+- Variables declared
+
+To trigger installation and configuration run `vagrant up` from your local repository directory.
+
 ## Azure DevOps PAT
 
-Before you start, create a new Azure DevOps Personal Access Token:
+Azure DevOps Personal Access Token creation:
 
+In your organization https://dev.azure.com/YOUR_ORGANIZATION_NAME/_usersSettings/tokens add new token:
 - Scope: `Agent Pools (read, manage)`. Make sure all the other boxes are cleared. -> my default case here.
 - If it's deployment group agent, define scope: `Deployment group (read, manage)`. Make sure all the other boxes are cleared.
 - If you want to add your agent to some other Agent Pool then default - make sure to provide correct name.
