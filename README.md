@@ -4,13 +4,13 @@
 
 Before you start, create a new Azure DevOps Personal Access Token:
 
-- Scope: `Agent Pools (read, manage)`. Make sure all the other boxes are cleared.
+- Scope: `Agent Pools (read, manage)`. Make sure all the other boxes are cleared. -> my default case here.
 - If it's deployment group agent, define scope: `Deployment group (read, manage)`. Make sure all the other boxes are cleared.
 - If you want to add your agent to some other Agent Pool then default - make sure to provide correct name.
 
 ## Vagrantfile
 - Creates Ubuntu20.04LTS VM locally.
-- ~~ Uses specified SSH key pair for ansible.~~ Uses key created by Vagrant. To use yours - uncomment corresponding line in Vagrantfile.
+- Uses key created by Vagrant.
 - Creates VM with dynamically assigned IP (my network doesn't have static IP assigned, so this is a workaround). Due to that fact, Vagrant needs to publish the VM hostname on the network, which by next VM runs resolves the hostname `azdevops-ubuntu20-agent.local` to the correct IP by Avahi daemon, whatever the IP is.
 - Uses ansible to provision & configure Azure DevOps self-hosted agent.
 
@@ -38,29 +38,17 @@ It will then listen if any job requests are posted across all projects in organi
 
 ## Configure agent to listen to SINGLE project:
 
-Define variable for project and pass parameter with that variable as: `--project "{{ AZDEVOPS_PROJECT_NAME1 }}"` in `azure-devops-agent` role. 
+Define variable for project and pass parameter with that variable as: `--project {{ AZDEVOPS_PROJECT_NAME1 }}` in `azure-devops-agent` role. 
 
 
 ## Configure agent to listen to SPECIFIED projects:
 
-Adjust `azdevops-agent-playbook.yaml`:
-```yaml
-    - name: Configure the Azure DevOps agent
-      shell: |
-        azdevopsagent configure \
-          --unattended \
-          --agent "{{ AZDEVOPS_AGENT_NAME }}" \
-          --url "https://dev.azure.com/{{ AZDEVOPS_ACCOUNT_NAME }}" \
-          --auth pat \
-          --token "{{ AZDEVOPS_ACCESS_TOKEN }}" \
-          --pool "{{ AZDEVOPS_AGENT_POOL }}" \
-          --project "{{ AZDEVOPS_PROJECT_NAME1 }},{{ AZDEVOPS_PROJECT_NAME2 }},{{ AZDEVOPS_PROJECT_NAME2 }}" \
-          --replace \
-          --acceptTeeEula
+Adjust `Configure the Azure DevOps agent` task in `azure-devops-agent` role adding parameter: 
+```
+--project {{ AZDEVOPS_PROJECT_NAME1 }},{{ AZDEVOPS_PROJECT_NAME2 }},{{ AZDEVOPS_PROJECT_NAME2 }}
 ```
 
-
-Before running the playbook, make sure you have declared all the required variables and changed the file name `azdevops-vars-sample.yaml` to `azdevops-vars.yaml`.
+Before running the playbook, make sure you have declared all the required variables.
 
 
 > #### Tested with the following software versions installed on host instance:
