@@ -1,0 +1,88 @@
+---
+- name: Install Azure DevOps agent dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - curl
+    - apt-transport-https
+    - lsb-release
+    - ca-certificates
+    - gnupg
+  tags:
+    - azdevops-agent
+    - azure-cli
+  become: true
+
+- name: Download the Azure DevOps agent package from URL
+  become: false
+  become_user: ubuntu
+  get_url:
+    url: https://vstsagentpackage.azureedge.net/agent/2.213.2/vsts-agent-linux-x64-2.213.2.tar.gz
+    dest: /tmp
+  tags:
+    - azdevops-agent
+
+- name: Create destination directory for Azure DevOps agent package
+  file:
+    path: /tmp/vsts-agent-linux-x64-2.213.2
+    state: directory
+  tags:
+    - azdevops-agent
+
+- name: Extract the Azure DevOps agent package
+  unarchive:
+    src: /tmp/vsts-agent-linux-x64-2.213.2.tar.gz
+    dest: /tmp/vsts-agent-linux-x64-2.213.2
+    remote_src: true
+  tags:
+    - azdevops-agent
+
+- name: Change to the destination directory for the Azure DevOps agent package
+  file:
+    path: /tmp/vsts-agent-linux-x64-2.213.2
+    state: directory
+  tags:
+    - azdevops-agent
+
+- name: Install and configure the Azure DevOps agent
+  shell: |
+    ./config.sh \
+      --unattended \
+      --agent "{{ AZDEVOPS_AGENT_NAME }}" \
+      --url "https://dev.azure.com/{{ AZDEVOPS_ACCOUNT_NAME }}" \
+      --auth pat \
+      --token "{{ AZDEVOPS_ACCESS_TOKEN }}" \
+      --pool "{{ AZDEVOPS_AGENT_POOL }}" \
+      --replace \
+      --acceptTeeEula
+  args:
+    chdir: /tmp/vsts-agent-linux-x64-2.213.2
+  tags:
+    - azdevops-agent
+
+- name: Enable Azure DevOps agent to start on boot
+  become: true
+  shell: |
+    sudo ./svc.sh install
+  args:
+    chdir: /tmp/vsts-agent-linux-x64-2.213.2
+  tags:
+    - azdevops-agent
+
+- name: Start the Azure DevOps agent
+  service:
+    name: vsts.agent.vzheshch.self\x2dhosted\x2dagents.self\x2dhosted\x2dubuntu20.service 
+    state: started
+  tags:
+    - azdevops-agent
+
+# Alternatively to "Start the Azure DevOps agent" it can be started from command line by ansible or manually (uncomment the task below):
+# - name: Start the Azure DevOps agent with command line
+#   become: true
+#   shell: |
+#     sudo ./svc.sh start
+#   args:
+#     chdir: /tmp/vsts-agent-linux-x64-2.213.2
+#   tags:
+#     - azdevops-agent

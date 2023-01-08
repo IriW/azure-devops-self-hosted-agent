@@ -1,0 +1,5 @@
+# AZDEVOPS_AGENT_NAME: my_agent_name
+# AZDEVOPS_ACCOUNT_NAME: my-account
+# AZDEVOPS_ACCESS_TOKEN: my-azure-devops--access-token
+# AZDEVOPS_AGENT_POOL: Default (or other to be defined)
+# AZDEVOPS_PROJECT_NAME: my project

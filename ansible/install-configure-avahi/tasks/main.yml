@@ -1,0 +1,28 @@
+---
+# tasks file for install-configure-avahi
+- name: Install the Avahi daemon
+  apt:
+    name: avahi-daemon
+    state: present
+  tags:
+    - avahi
+
+- name: Configure the Avahi daemon
+  template:
+    src: avahi.conf.j2
+    dest: /etc/avahi/avahi-daemon.conf
+  tags:
+    - avahi
+
+- name: Restart the Avahi daemon
+  service:
+    name: avahi-daemon
+    state: restarted
+  tags:
+    - avahi
+
+- name: Set hostname variable
+  set_fact:
+    ansible_hostname: "{{ AZDEVOPS_AGENT_NAME }}"
+  tags:
+    - avahi

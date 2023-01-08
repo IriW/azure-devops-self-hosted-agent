@@ -1,0 +1,12 @@
+galaxy_info:
+  author: Irina Debowska
+  description: Install basic software for Azure DevOps self-hosted agent running on Ubuntu20.04
+  company: no_company
+
+  license: license (GPL-2.0-or-later, MIT, etc)
+    - MIT
+  min_ansible_version: "2.1"
+  galaxy_tags: []
+
+dependencies:
+  - role: update-packages

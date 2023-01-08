@@ -1,0 +1,141 @@
+---
+# tasks file for install-basic-agent-software
+- name: Import the Microsoft GPG key to use for agent, .NET Core and Azure CLI 
+  apt_key:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+  become: true
+  tags:
+    - azdevops-agent
+    - azure-cli
+    - dotnet
+    
+- name: Import the Docker GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  become: true
+  tags:
+    - docker
+
+- name: Import the Kubernetes GPG key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+  become: true
+  tags:
+    - kubernetes
+    
+- name: Install Git
+  apt:
+    name: git
+    state: present
+  become: true
+  tags:
+    - git
+
+- name: Install Python 3
+  apt:
+    name: python3
+    state: present
+  become: true
+  tags:
+    - python3
+
+- name: Install Node.js
+  apt:
+    name: nodejs
+    state: present
+  become: true
+  tags:
+    - node
+
+- name: Install Java
+  apt:
+    name: default-jdk
+    state: present
+  become: true
+  tags:
+    - java-jdk
+
+- name: Install Docker and Kubernetes dependencies (same for both)
+  apt:
+    name: "{{ item }}"
+    state: present
+  become: true
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gnupg-agent
+    - software-properties-common
+  tags:
+    - kubernetes
+    - docker
+
+- name: Add the Docker package repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
+    state: present
+  become: true
+  tags:
+    - docker
+
+- name: Install Docker
+  apt:
+    name: docker.io
+    state: present
+  become: true
+  tags:
+    - docker
+
+- name: Add the Kubernetes package repository
+  apt_repository:
+    repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+    state: present
+  become: true
+  tags:
+    - kubernetes
+
+- name: Install the Kubernetes packages
+  apt:
+    name:
+      - kubelet
+      - kubectl
+      - kubeadm
+    state: present
+  become: true
+  tags:
+    - kubernetes
+
+- name: Add the .NET Core package repository
+  apt_repository:
+    repo: "deb https://packages.microsoft.com/ubuntu/20.04/prod focal main"
+    state: present
+  become: true
+  tags:
+    - dotnet
+
+- name: Install .NET Core SDK
+  apt:
+    name: dotnet-sdk-3.1
+    state: present
+  become: true
+  tags:
+    - dotnet
+
+- name: Add the Azure CLI package repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ {{ ansible_lsb.codename }} main"
+    state: present
+  become: true
+  tags:
+    - azure-cli
+
+- name: Install the Azure CLI package
+  apt:
+    name: azure-cli
+    state: present
+  become: true
+  tags:
+    - azure-cli

@@ -1,5 +1,0 @@
-azure_devops_agent_name: my_agent_name
-azure_devops_account_name: my-account
-azure_devops_access_token: my-azure-devops--access-token
-azure_devops_agent_pool: Default (or other to be defined)
-azure_devops_project_name: my project
