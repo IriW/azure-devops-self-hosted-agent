@@ -18,7 +18,7 @@ Role Variables
 - AZDEVOPS_AGENT_POOL
 - AZDEVOPS_PROJECT_NAME
 
-Devine in /vars/main.yml or pass in command line.
+Define in /vars/main.yml or pass in command line.
 
 Azure DevOps agent dependencies
 ------------
